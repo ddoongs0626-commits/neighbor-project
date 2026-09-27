@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>당신은 당신의 이웃을 00하십니까?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Gowun Batang', 'Nanum Myeongjo', serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+            background: linear-gradient(180deg, #12032b 0%, #301353 35%, #632057 65%, #9b3d52 85%, #d1624b 100%);
+            color: #fff;
+            padding: 40px 20px 80px 20px;
+        }
+
+        .milky-way {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 50% 20%, rgba(186, 133, 255, 0.25) 0%, rgba(220, 150, 255, 0.1) 45%, transparent 70%);
+            transform: rotate(-12deg) scale(1.5);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background-color: #ffffff;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite ease-in-out;
+            opacity: var(--opacity);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: var(--opacity); transform: scale(1); }
+            50% { opacity: 0.1; transform: scale(0.6); }
+        }
+
+        .ember {
+            position: fixed;
+            bottom: 20%;
+            background-color: #ffaa44;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #ff7700;
+            pointer-events: none;
+            z-index: 2;
+            animation: floatUp var(--duration) infinite linear;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateY(-80vh) translateX(var(--drift)) scale(0.2);
+                opacity: 0;
+            }
+        }
+
+        .landscape {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .mountain-bg {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 140px;
+            fill: #0c0414;
+        }
+
+        /* 상단 버튼 그룹 */
+        .top-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+            display: flex;
+            gap: 10px;
+        }
+
+        .audio-control, .qr-control {
+            background: rgba(20, 10, 35, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 200, 150, 0.25);
+            color: #ffe6cb;
+            padding: 10px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .audio-control:hover, .qr-control:hover {
+            background: rgba(40, 20, 65, 0.8);
+            border-color: rgba(255, 200, 150, 0.5);
+            transform: translateY(-2px);
+        }
+
+        #youtube-player-container {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 520px;
+            background: rgba(20, 10, 32, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 215, 170, 0.2);
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+                        0 0 40px rgba(230, 120, 80, 0.15);
+            margin-bottom: 40px;
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header-title h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #fff6ed;
+            text-shadow: 0 0 12px rgba(255, 170, 100, 0.5);
+            letter-spacing: -0.5px;
+            word-break: keep-all;
+            line-height: 1.4;
+        }
+
+        .header-title p {
+            font-size: 0.95rem;
+            color: #e2c2dd;
+            margin-top: 8px;
+            opacity: 0.85;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            color: #ffe3d1;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            background: rgba(10, 3, 20, 0.45);
+            border: 1px solid rgba(255, 200, 160, 0.25);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]::placeholder, textarea::placeholder {
+            color: #a894b5;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #ff9d6c;
+            background: rgba(15, 5, 28, 0.65);
+            box-shadow: 0 0 15px rgba(255, 150, 100, 0.25);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.6;
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+            border: none;
+            border-radius: 12px;
+            color: #2b0c00;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 126, 95, 0.35);
+            margin-top: 10px;
+        }
+
+        button.submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 126, 95, 0.5);
+            background: linear-gradient(135deg, #ff8c70 0%, #ffc18c 100%);
+        }
+
+        button.submit-btn:disabled {
+            background: #554359;
+            color: #8c7b91;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* 공통 모달 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 2, 12, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: linear-gradient(145deg, #2a153d 0%, #150924 100%);
+            border: 1px solid rgba(255, 200, 150, 0.3);
+            border-radius: 20px;
+            padding: 35px;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            transform: translateY(20px);
+            transition: transform 0.4s ease;
+            position: relative;
+            text-align: center;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: translateY(0);
+        }
+
+        .modal-card h2 {
+            font-size: 1.4rem;
+            color: #ffd8b3;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed rgba(255, 200, 150, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .modal-item {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: #d1c2dd;
+            text-align: left;
+        }
+
+        .modal-item strong {
+            color: #ffb88c;
+        }
+
+        .modal-desc {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            line-height: 1.6;
+            white-space: pre-line;
+            color: #fff0e5;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: left;
+        }
+
+        .qr-img {
+            width: 200px;
+            height: 200px;
+            margin: 15px auto;
+            border-radius: 12px;
+            padding: 10px;
+            background: #ffffff;
+            box-shadow: 0 0 20px rgba(255, 180, 120, 0.3);
+        }
+
+        .close-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid rgba(255, 200, 150, 0.3);
+            color: #ffe6cb;
+            border-radius: 10px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 200, 150, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="milky-way"></div>
+    <div class="stars-container" id="starsContainer"></div>
+
+    <div id="youtube-player-container">
+        <div id="player"></div>
+    </div>
+
+    <!-- 우측 상단 컨트롤 버튼 그룹 -->
+    <div class="top-controls">
+        <button class="qr-control" id="qrBtn">
+            📱 <span>QR 공유</span>
+        </button>
+        <button class="audio-control" id="audioBtn">
+            <span id="audioIcon">🔥</span> <span id="audioText">음악 켜기</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="header-title">
+            <h1>당신은 당신의 이웃을 00하십니까?</h1>
+            <p>밤하늘 아래 온기를 담아 마음을 전해보세요</p>
+        </div>
+
+        <form id="neighborForm">
+            <div class="form-group">
+                <label for="userName">나의 이름</label>
+                <input type="text" id="userName" name="userName" placeholder="이름을 입력하세요" required>
+            </div>
+
+            <div class="form-group">
+                <label for="studentId">학번</label>
+                <input type="text" id="studentId" name="studentId" placeholder="학번을 입력하세요" required>
+            </div>
+
+            <div class="form-group">
+                <label for="targetName">소개하고 싶은 이웃</label>
+                <input type="text" id="targetName" name="targetName" placeholder="소개할 사람의 이름/칭호" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">그 사람에 대한 이야기</label>
+                <textarea id="description" name="description" placeholder="소개하고 싶은 사연이나 이야기를 남겨주세요." required></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn" class="submit-btn">밤하늘로 전송하기</button>
+        </form>
+    </div>
+
+    <!-- 결과 모달 -->
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal-card">
+            <h2>✨ 이야기가 전송되었습니다</h2>
+            <div class="modal-item"><strong>작성자:</strong> <span id="resName"></span> (<span id="resStudentId"></span>)</div>
+            <div class="modal-item"><strong>소개할 이웃:</strong> <span id="resTarget"></span></div>
+            <div class="modal-desc" id="resDesc"></div>
+            <button class="close-btn" id="closeModal">확인</button>
+        </div>
+    </div>
+
+    <!-- QR 코드 모달 -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal-card">
+            <h2>📱 페이지 공유 QR 코드</h2>
+            <p style="font-size: 0.9rem; color: #d1c2dd; margin-top: 5px;">카메라로 스캔하면 이 페이지로 이동합니다.</p>
+            <img id="qrImage" class="qr-img" src="" alt="QR Code">
+            <button class="close-btn" id="closeQrModal">닫기</button>
+        </div>
+    </div>
+
+    <div class="landscape">
+        <svg class="mountain-bg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,120 L0,60 Q150,20 350,70 T750,40 Q950,10 1200,50 L1200,120 Z" fill="#120520"></path>
+            <path d="M0,120 L0,80 Q200,40 450,90 T900,60 Q1050,30 1200,75 L1200,120 Z" fill="#08020e"></path>
+            <polygon points="180,120 220,70 260,120" fill="#2b1500" />
+            <polygon points="190,120 220,75 250,120" fill="#ff9d00" opacity="0.85" />
+            <polygon points="210,120 220,90 230,120" fill="#ffea79" />
+            <circle cx="550" cy="110" r="15" fill="#ff5500" opacity="0.6" />
+            <polygon points="545,115 550,95 555,115" fill="#ffaa00" />
+            <polygon points="547,115 550,100 553,115" fill="#ffffff" />
+        </svg>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEz2hct8tfW7HEK9pnS59-Ww5kvkMrzJCATsecwyP0PlD7bpNDoFGur5ZXNUyA3z7J/exec";
+
+        // 별 생성기
+        const starsContainer = document.getElementById('starsContainer');
+        for (let i = 0; i < 120; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 2.5 + 0.5;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.top = `${Math.random() * 85}%`;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.setProperty('--opacity', Math.random() * 0.7 + 0.3);
+            star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+            star.style.animationDelay = `${Math.random() * 3}s`;
+            starsContainer.appendChild(star);
+        }
+
+        // 불씨 생성기
+        function createEmber() {
+            const ember = document.createElement('div');
+            ember.className = 'ember';
+            const size = Math.random() * 3 + 1.5;
+            ember.style.width = `${size}px`;
+            ember.style.height = `${size}px`;
+            ember.style.left = `${45 + Math.random() * 10}%`;
+            ember.style.setProperty('--drift', `${(Math.random() - 0.5) * 150}px`);
+            ember.style.setProperty('--duration', `${Math.random() * 4 + 3}s`);
+            document.body.appendChild(ember);
+            setTimeout(() => ember.remove(), 7000);
+        }
+        setInterval(createEmber, 300);
+
+        // 유튜브 플레이어
+        let player = null, isPlaying = false, isPlayerReady = false;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '0', width: '0', videoId: 'azLpAWjnwpg',
+                playerVars: { 'autoplay': 0, 'controls': 0, 'loop': 1, 'playlist': 'azLpAWjnwpg' },
+                events: { 'onReady': () => isPlayerReady = true }
+            });
+        }
+
+        document.getElementById('audioBtn').addEventListener('click', () => {
+            if (!isPlayerReady) return alert('음악을 로딩 중입니다.');
+            if (!isPlaying) {
+                player.playVideo(); isPlaying = true;
+                document.getElementById('audioIcon').textContent = '🔊';
+                document.getElementById('audioText').textContent = '음악 끄기';
+            } else {
+                player.pauseVideo(); isPlaying = false;
+                document.getElementById('audioIcon').textContent = '🔥';
+                document.getElementById('audioText').textContent = '음악 켜기';
+            }
+        });
+
+        // QR 코드 모달 동작
+        const qrModal = document.getElementById('qrModal');
+        const qrImage = document.getElementById('qrImage');
+        
+        document.getElementById('qrBtn').addEventListener('click', () => {
+            // 현재 페이지 URL을 기반으로 QR코드 생성 (온라인 공개 서버에 올린 후 접속 시 자동 주소 반영)
+            const currentUrl = encodeURIComponent(window.location.href);
+            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${currentUrl}`;
+            qrModal.classList.add('active');
+        });
+
+        document.getElementById('closeQrModal').addEventListener('click', () => {
+            qrModal.classList.remove('active');
+        });
+
+        // 폼 제출 동작
+        const form = document.getElementById('neighborForm');
+        const resultModal = document.getElementById('resultModal');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '전송 중...';
+
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: new FormData(form) })
+            .then(() => showResult())
+            .catch(() => showResult())
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '밤하늘로 전송하기';
+            });
+        });
+
+        function showResult() {
+            document.getElementById('resName').textContent = document.getElementById('userName').value;
+            document.getElementById('resStudentId').textContent = document.getElementById('studentId').value;
+            document.getElementById('resTarget').textContent = document.getElementById('targetName').value;
+            document.getElementById('resDesc').textContent = document.getElementById('description').value;
+            resultModal.classList.add('active');
+            form.reset();
+        }
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            resultModal.classList.remove('active');
+        });
+    </script>
+</body>
+</html>
