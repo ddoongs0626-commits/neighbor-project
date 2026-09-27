@@ -135,6 +135,17 @@
             transform: translateY(-2px);
         }
 
+        /* 유튜브 백그라운드 플레이어 숨김 처리 */
+        #youtube-player-container {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .container {
             position: relative;
             z-index: 10;
@@ -353,7 +364,12 @@
     <div class="milky-way"></div>
     <div class="stars-container" id="starsContainer"></div>
 
-    <!-- 우측 상단 컨트롤 버튼 그룹 -->
+    <!-- 숨겨진 유튜브 플레이어 -->
+    <div id="youtube-player-container">
+        <div id="player"></div>
+    </div>
+
+    <!-- 우측 상단 버튼 그룹 -->
     <div class="top-controls">
         <button class="qr-control" id="qrBtn">
             📱 <span>QR 공유</span>
@@ -425,11 +441,13 @@
         </svg>
     </div>
 
+    <!-- 유튜브 API 스크립트 -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <script>
-        // 요청하신 Google Apps Script URL 반영
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEz2hct8tfW7HEK9pnS59-Ww5kvkMrzJCATsecwyP0PlD7bpNDoFGur5ZXNUyA3z7J/exec";
 
-        // 별 생성기
+        // 별 배경 생성
         const starsContainer = document.getElementById('starsContainer');
         for (let i = 0; i < 120; i++) {
             const star = document.createElement('div');
@@ -445,7 +463,7 @@
             starsContainer.appendChild(star);
         }
 
-        // 불씨 생성기
+        // 불씨 애니메이션 생성
         function createEmber() {
             const ember = document.createElement('div');
             ember.className = 'ember';
@@ -460,65 +478,44 @@
         }
         setInterval(createEmber, 300);
 
-        // 잔잔한 재즈 피아노 오디오 자동 생성 및 재생 (Web Audio API)
-        let audioCtx = null;
-        function playJazzPianoBGM() {
-            if (audioCtx) return;
-            
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
+        // 유튜브 플레이어 설정
+        let player = null;
+        let isPlayerReady = false;
 
-            // 따뜻한 재즈 피아노 코드 진행 (FM7 - Em7 - Dm7 - Cmaj7)
-            const chords = [
-                [349.23, 440.00, 523.25, 659.25], // Fmaj7
-                [329.63, 392.00, 493.88, 587.33], // Em7
-                [293.66, 349.23, 440.00, 523.25], // Dm7
-                [261.63, 329.63, 392.00, 493.88]  // Cmaj7
-            ];
-
-            let chordIndex = 0;
-
-            function playChord() {
-                if (!audioCtx) return;
-                const currentChord = chords[chordIndex];
-                const now = audioCtx.currentTime;
-
-                currentChord.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-
-                    osc.type = 'triangle'; // 따뜻한 피아노 느낌 음색
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-
-                    // 아르페지오 및 감쇄 봉투 (Envelope)
-                    gain.gain.setValueAtTime(0.001, now + idx * 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.06, now + idx * 0.08 + 0.05);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 2.8);
-
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-
-                    osc.start(now + idx * 0.08);
-                    osc.stop(now + idx * 0.08 + 3.0);
-                });
-
-                chordIndex = (chordIndex + 1) % chords.length;
-            }
-
-            playChord();
-            setInterval(playChord, 3200);
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '0',
+                width: '0',
+                videoId: 'azLpAWjnwpg',
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 0,
+                    'loop': 1,
+                    'playlist': 'azLpAWjnwpg',
+                    'playsinline': 1
+                },
+                events: {
+                    'onReady': (e) => {
+                        isPlayerReady = true;
+                        e.target.playVideo();
+                    }
+                }
+            });
         }
 
-        // 페이지 접속 시 클릭/터치 등 첫 상호작용 발생 시 음악 자동 시작
-        const enableAutoAudio = () => {
-            playJazzPianoBGM();
-            window.removeEventListener('click', enableAutoAudio);
-            window.removeEventListener('touchstart', enableAutoAudio);
-            window.removeEventListener('keydown', enableAutoAudio);
+        // 브라우저의 소리 자동 재생 제한(Autoplay policy) 대응
+        // 사용자가 페이지를 어디든 처음 터치/클릭하는 순간 음악 재생
+        const startBgmOnInteraction = () => {
+            if (isPlayerReady && player) {
+                player.playVideo();
+            }
+            window.removeEventListener('click', startBgmOnInteraction);
+            window.removeEventListener('touchstart', startBgmOnInteraction);
+            window.removeEventListener('keydown', startBgmOnInteraction);
         };
-        window.addEventListener('click', enableAutoAudio);
-        window.addEventListener('touchstart', enableAutoAudio);
-        window.addEventListener('keydown', enableAutoAudio);
+        window.addEventListener('click', startBgmOnInteraction);
+        window.addEventListener('touchstart', startBgmOnInteraction);
+        window.addEventListener('keydown', startBgmOnInteraction);
 
         // QR 코드 모달 동작
         const qrModal = document.getElementById('qrModal');
